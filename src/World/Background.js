@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import World from "./World";
+import testVertexShader from './shaders/vertex.glsl'
+import testFragmentShader from './shaders/fragment.glsl'
 
 export default class Background {
     constructor(squareScale, squareOutlineWidth, squareDefaultColor, squareOutlineColor, boundRows, boundCols) {
@@ -16,8 +18,6 @@ export default class Background {
         this.world = new World();
         this.scene = this.world.scene;
 
-        this.setBounds();
-
         this.time = this.world.time;
 
 
@@ -25,7 +25,26 @@ export default class Background {
         this.waveStep = 0;
         this.waveStartTime = 0;
 
-        this.setBoundEffects(Math.floor(this.boundCols / 2), 0, 20, 'red');
+        this.setBeamDoor();
+        this.setBounds();
+        this.setBoundEffects(Math.floor(this.boundRows / 2), 0, 20, 'red');
+    }
+
+    setBeamDoor(){
+        const geometry = new THREE.PlaneGeometry(this.boundRows * 3 + 1, this.boundRows + 1, 32, 32)
+        
+        const material = new THREE.RawShaderMaterial({
+            vertexShader: testVertexShader,
+            fragmentShader: testFragmentShader,
+            side: THREE.DoubleSide,
+        })
+        
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.y = mesh.geometry.parameters.height / 2;
+        mesh.position.x -= 1.5;
+        mesh.position.z = mesh.geometry.parameters.width / 2 - 1.5;
+        mesh.rotation.y = Math.PI * 0.5;
+        this.scene.add(mesh)
     }
 
     setBounds() {
@@ -66,7 +85,7 @@ export default class Background {
             }
             else if (boundNum === 1) {
                 bound.position.y = this.boundRows + 1;
-                bound.position.z = this.boundCols * this.squareScale
+                bound.position.z = this.boundCols * this.squareScale - 2;
 
                 bound.rotation.z = Math.PI;
                 bound.rotation.y = Math.PI;

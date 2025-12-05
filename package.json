@@ -10,7 +10,8 @@
   "dependencies": {
     "gsap": "^3.13.0",
     "lil-gui": "^0.21.0",
-    "three": "^0.181.0"
+    "three": "^0.181.0",
+    "vite-plugin-glsl": "^1.5.5"
   },
   "devDependencies": {
     "vite": "^7.1.12"

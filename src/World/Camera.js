@@ -18,19 +18,20 @@ export default class Camera
     setInstance()
     {
         this.instance = new THREE.PerspectiveCamera(85, this.sizes.width / this.sizes.height, 0.1, 100)
-        this.instance.position.set(6, 4, 8)
+        this.instance.position.set(40, 10, 30);
         this.scene.add(this.instance)
     }
 
     setControls()
     {
         this.controls = new OrbitControls(this.instance, this.canvas)
+        this.controls.target = new THREE.Vector3(20, 10, 30);
         this.controls.enableDamping = true
     }
 
     resize()
     {
-        this.instance.aspect = this.sizes.width / this.sizes.height
+        this.instance.aspect = this.sizes.width / this.sizes.height;
         this.instance.updateProjectionMatrix()
     }
 

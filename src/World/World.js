@@ -31,9 +31,9 @@ export default class World
         this.time = new Time()
         this.scene = new THREE.Scene()
         this.camera = new Camera()
-        this.renderer = new Renderer("black");
+        this.renderer = new Renderer("grey");
 
-        this.worldFog = new WorldFog();
+        //this.worldFog = new WorldFog();
         this.lights = new Lights();
 
         this.background = new Background(3, 0.04, "black", "red", 25, 25)
