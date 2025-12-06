@@ -15,36 +15,72 @@ export default class Background {
         this.boundCols = boundCols;
 
         this.background = new THREE.Group();
+        this.clock = new THREE.Clock();
         this.world = new World();
         this.scene = this.world.scene;
 
         this.time = this.world.time;
 
-
-        this.waveActive = false;
-        this.waveStep = 0;
-        this.waveStartTime = 0;
-
-        this.setBeamDoor();
+        this.door = this.setDoor();
         this.setBounds();
-        this.setBoundEffects(Math.floor(this.boundRows / 2), 0, 20, 'red');
+        this.setWaveEffectParams(Math.floor(this.boundRows / 2), 0, 20, 'red');
     }
 
-    setBeamDoor(){
+    setDoor() {
+        this.doorEffect1Duration = 300;
+        this.doorEffect2Duration = 600;
+        this.newElapsed = 0;
+        this.doorOpeningX = 0.00;
+        this.doorOpeningY = 0.00;
+        this.doorHasOpened = false;
+        this.doorEffectsFinished = false;
         const geometry = new THREE.PlaneGeometry(this.boundRows * 3 + 1, this.boundRows + 1, 32, 32)
-        
+
         const material = new THREE.RawShaderMaterial({
             vertexShader: testVertexShader,
             fragmentShader: testFragmentShader,
-            side: THREE.DoubleSide,
+            uniforms: {
+                uColor: { value: new THREE.Color("red") },
+                uIncreaseX: { value: this.doorOpeningX },
+                uIncreaseY: { value: this.doorOpeningY },
+            }
+
         })
+
+        const door = new THREE.Mesh(geometry, material);
+        door.position.y = door.geometry.parameters.height / 2;
+        door.position.x -= 1.5;
+        door.position.z = door.geometry.parameters.width / 2 - 1.5;
+        door.rotation.y = Math.PI * 0.5;
+        this.scene.add(door);
+
+        window.addEventListener('click', () => {
+            if (!this.doorHasOpened) this.doorEffectT0 = Date.now();
+            this.doorHasOpened = true;
+        })
+        return door;
+    }
+
+    doorEffect() {
+        if (!this.doorHasOpened || this.doorEffectsFinished) return;
+        const now = Date.now();
+        const elapsed = now - this.doorEffectT0;
+        const nt1 = Math.min(elapsed / this.doorEffect1Duration, 1);
+        const nt2 = Math.min((elapsed - this.newElapsed) / this.doorEffect2Duration, 1);
+        if(nt1 < 1) this.newElapsed = elapsed;
         
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.y = mesh.geometry.parameters.height / 2;
-        mesh.position.x -= 1.5;
-        mesh.position.z = mesh.geometry.parameters.width / 2 - 1.5;
-        mesh.rotation.y = Math.PI * 0.5;
-        this.scene.add(mesh)
+
+        this.doorOpeningY = THREE.MathUtils.lerp(0, 1, nt1 * nt1);
+        this.doorOpeningX = THREE.MathUtils.lerp(0, 0.01, nt1 * nt1);
+        
+        if(nt1 >= 1) {
+            this.doorOpeningX = THREE.MathUtils.lerp(0.01, 1, nt2 * nt2);
+        }
+        
+        this.door.material.uniforms.uIncreaseX.value = this.doorOpeningX;
+        this.door.material.uniforms.uIncreaseY.value = this.doorOpeningY;
+        if(nt2 >= 1) this.doorEffectsFinished = true;
+
     }
 
     setBounds() {
@@ -97,9 +133,12 @@ export default class Background {
         this.scene.add(this.background);
     };
 
-    setBoundEffects(startRow, startCol, timeInterval, colorChange) {
+    setWaveEffectParams(startRow, startCol, timeInterval, colorChange) {
+        this.waveActive = false;
+        this.waveT0 = 0;
+
         window.addEventListener('click', () => {
-            if (this.waveActive) return; 
+            if (this.waveActive) return;
 
             // Calc max distance to corners
             const d1 = Math.abs(startRow - 0) + Math.abs(startCol - 0);
@@ -119,12 +158,12 @@ export default class Background {
         });
     }
 
-    update() {
+    waveEffect() {
+        const now = Date.now();
         if (!this.waveActive) return;
-        const now = performance.now();
 
-        if (now - this.waveStartTime >= this.timeInterval) {
-            this.waveStartTime = now;
+        if (now - this.waveT0 >= this.timeInterval) {
+            this.waveT0 = now;
 
             const step = this.waveStep;
             const prevStep = step - 1;
@@ -152,5 +191,10 @@ export default class Background {
                 this.waveActive = false;
             }
         }
+    }
+
+    update() {
+        this.waveEffect();
+        this.doorEffect();
     }
 }

@@ -13,15 +13,7 @@ export default class Lights {
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         this.scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight();
-        directionalLight.castShadow = true
-        directionalLight.shadow.mapSize.set(1024, 1024)
-        directionalLight.shadow.camera.far = 15
-        directionalLight.shadow.camera.left = - 7
-        directionalLight.shadow.camera.top = 7
-        directionalLight.shadow.camera.right = 7
-        directionalLight.shadow.camera.bottom = - 7
-        directionalLight.position.set(- 5, 5, 0)
-        //this.scene.add(directionalLight)
+        const light = new THREE.HemisphereLight( 0xd6e6ff, 0xa38c08, 1);
+        this.scene.add(light);
     }
 }
