@@ -1,7 +1,8 @@
 import * as THREE from "three";
 import World from "./World";
-import testVertexShader from './shaders/vertex.glsl'
-import testFragmentShader from './shaders/fragment.glsl'
+import doorVertexShader from './shaders/doorVertex.glsl';
+import doorFragmentShader from './shaders/doorFragment.glsl';
+
 
 export default class Background {
     constructor(squareScale, squareOutlineWidth, squareDefaultColor, squareOutlineColor, boundRows, boundCols) {
@@ -22,8 +23,9 @@ export default class Background {
         this.time = this.world.time;
 
         this.door = this.setDoor();
+        
         this.setBounds();
-        this.setWaveEffectParams(Math.floor(this.boundRows / 2), 0, 20, 'red');
+        this.setWaveEffect(Math.floor(this.boundRows / 2), 0, 10, 'red');
     }
 
     setDoor() {
@@ -37,8 +39,8 @@ export default class Background {
         const geometry = new THREE.PlaneGeometry(this.boundRows * 3 + 1, this.boundRows + 1, 32, 32)
 
         const material = new THREE.RawShaderMaterial({
-            vertexShader: testVertexShader,
-            fragmentShader: testFragmentShader,
+            vertexShader: doorVertexShader,
+            fragmentShader: doorFragmentShader,
             uniforms: {
                 uColor: { value: new THREE.Color("red") },
                 uIncreaseX: { value: this.doorOpeningX },
@@ -133,7 +135,7 @@ export default class Background {
         this.scene.add(this.background);
     };
 
-    setWaveEffectParams(startRow, startCol, timeInterval, colorChange) {
+    setWaveEffect(startRow, startCol, timeInterval, colorChange) {
         this.waveActive = false;
         this.waveT0 = 0;
 
