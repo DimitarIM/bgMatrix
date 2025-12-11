@@ -8,7 +8,7 @@
     "build": "vite build"
   },
   "dependencies": {
-    "gsap": "^3.13.0",
+    "gsap": "^3.14.1",
     "lil-gui": "^0.21.0",
     "three": "^0.181.0",
     "vite-plugin-glsl": "^1.5.5"

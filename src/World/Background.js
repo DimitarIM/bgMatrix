@@ -2,6 +2,7 @@ import * as THREE from "three";
 import World from "./World";
 import doorVertexShader from './shaders/doorVertex.glsl';
 import doorFragmentShader from './shaders/doorFragment.glsl';
+import { gsap}  from "gsap";
 
 
 export default class Background {
@@ -25,7 +26,7 @@ export default class Background {
         this.door = this.setDoor();
         
         this.setBounds();
-        this.setWaveEffect(Math.floor(this.boundRows / 2), 0, 10, 'red');
+        this.setWaveEffect(Math.floor(this.boundRows / 2), 0, 20, 'red');
     }
 
     setDoor() {
@@ -179,10 +180,21 @@ export default class Background {
 
                     if (distance === prevStep) {
                         square.children[0].material.color.set(this.squareDefaultColor);
+                        gsap.to(square.position, {
+                            y:0,
+                            ease: "power2.in",
+                            duration: 0.2,
+                        })
                     }
 
                     if (distance === step) {
                         square.children[0].material.color.set(this.waveColor);
+                        gsap.to(square.position, {
+                            y:1,
+                            ease: "power2.out",
+                            duration: 0.4,
+                        })
+                        console.log(square.position.y);
                     }
                 });
             });
