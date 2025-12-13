@@ -6,12 +6,12 @@ import { gsap}  from "gsap";
 
 
 export default class Background {
-    constructor(squareScale, squareOutlineWidth, squareDefaultColor, squareOutlineColor, boundRows, boundCols) {
+    constructor(squareScale, squareOutlineWidth, boundRows, boundCols) {
         this.squareScale = squareScale;
         this.squareOutlineWidth = squareOutlineWidth;
 
-        this.squareDefaultColor = squareDefaultColor;
-        this.squareOutlineColor = squareOutlineColor;
+        this.squareDefaultColor = new THREE.Color("black");
+        this.squareOutlineColor = new THREE.Color("red");
 
         this.boundRows = boundRows;
         this.boundCols = boundCols;
@@ -21,25 +21,27 @@ export default class Background {
         this.world = new World();
         this.scene = this.world.scene;
 
+        this.debug = this.world.debug;
+
         this.time = this.world.time;
 
         this.door = this.setDoor();
         
         this.setBounds();
-        this.setWaveEffect(Math.floor(this.boundRows / 2), 0, 20, 'red');
+        this.setWaveEffect(Math.floor(this.boundRows / 2), 0, 20, new THREE.Color("red"));
     }
 
     setDoor() {
-        this.doorEffect1Duration = 300;
+        this.doorEffect1Duration = 400;
         this.doorEffect2Duration = 600;
         this.newElapsed = 0;
         this.doorOpeningX = 0.00;
         this.doorOpeningY = 0.00;
         this.doorHasOpened = false;
         this.doorEffectsFinished = false;
-        const geometry = new THREE.PlaneGeometry(this.boundRows * 3 + 1, this.boundRows + 1, 32, 32)
+        const doorGeometry = new THREE.PlaneGeometry(this.boundRows * 3 + 1, this.boundRows + 1, 32, 32)
 
-        const material = new THREE.RawShaderMaterial({
+        const doorMaterial = new THREE.RawShaderMaterial({
             vertexShader: doorVertexShader,
             fragmentShader: doorFragmentShader,
             uniforms: {
@@ -50,7 +52,7 @@ export default class Background {
 
         })
 
-        const door = new THREE.Mesh(geometry, material);
+        const door = new THREE.Mesh(doorGeometry, doorMaterial);
         door.position.y = door.geometry.parameters.height / 2;
         door.position.x -= 1.5;
         door.position.z = door.geometry.parameters.width / 2 - 1.5;
@@ -61,6 +63,12 @@ export default class Background {
             if (!this.doorHasOpened) this.doorEffectT0 = Date.now();
             this.doorHasOpened = true;
         })
+
+        //DEBUG
+        if(this.debug.active) {
+            this.debug.ui.addColor(doorMaterial.uniforms.uColor, 'value').name("doorColor");
+        } 
+
         return door;
     }
 
@@ -134,11 +142,18 @@ export default class Background {
 
         }
         this.scene.add(this.background);
+
+        //DEBUG
+
+        if(this.debug.active) {
+            this.debug.ui.addColor(outlineMaterial, 'color').name("squareOutlineColor");
+        } 
     };
 
     setWaveEffect(startRow, startCol, timeInterval, colorChange) {
         this.waveActive = false;
         this.waveT0 = 0;
+        this.waveColor = colorChange;
 
         window.addEventListener('click', () => {
             if (this.waveActive) return;
@@ -159,6 +174,11 @@ export default class Background {
             this.waveStartCol = startCol;
             this.waveStartTime = performance.now();
         });
+
+            //DEBUG
+        if(this.debug.active) {
+            this.debug.ui.addColor(this, 'waveColor').name("waveColor");
+        } 
     }
 
     waveEffect() {
@@ -174,12 +194,11 @@ export default class Background {
             // Simulate the wave
             this.background.children.forEach(bound => {
                 bound.children.forEach(square => {
-
                     const { row, col } = square.userData;
                     const distance = Math.abs(row - this.waveStartRow) + Math.abs(col - this.waveStartCol);
-
+                    const squareMaterial = square.children[0].material;
                     if (distance === prevStep) {
-                        square.children[0].material.color.set(this.squareDefaultColor);
+                        squareMaterial.color.set(this.squareDefaultColor);
                         gsap.to(square.position, {
                             y:0,
                             ease: "power2.in",
@@ -188,13 +207,12 @@ export default class Background {
                     }
 
                     if (distance === step) {
-                        square.children[0].material.color.set(this.waveColor);
+                        squareMaterial.color.set(this.waveColor);
                         gsap.to(square.position, {
                             y:1,
                             ease: "power2.out",
                             duration: 0.4,
                         })
-                        console.log(square.position.y);
                     }
                 });
             });
@@ -205,6 +223,7 @@ export default class Background {
                 this.waveActive = false;
             }
         }
+
     }
 
     update() {

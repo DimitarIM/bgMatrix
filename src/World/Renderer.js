@@ -1,15 +1,11 @@
 import World from "./World";
 import * as THREE from "three";
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js'
-import { OutputPass} from 'three/examples/jsm/postprocessing/OutputPass.js';
-import bloomVertexShader from './shaders/bloomVertex.glsl';
-import bloomFragmentShader from './shaders/bloomFragment.glsl';
-
+import { GammaCorrectionShader} from 'three/examples/jsm/shaders/GammaCorrectionShader.js';
 
 export default class Renderer {
     constructor(worldColor) {
@@ -41,71 +37,49 @@ export default class Renderer {
     }
 
     setComposer() {
-        this.composer = new EffectComposer(this.instance);
-
-        this.finalComposer = new EffectComposer(this.instance);
-
-
-        this.renderPass = new RenderPass(this.scene, this.camera.instance);
-
-        this.fxaaPass = new ShaderPass(FXAAShader);
-
-        this.mixPass = new ShaderPass(
-            new THREE.ShaderMaterial({
-                uniforms: {
-                    baseTexture: {value: null},
-                    bloomTexture: {value: this.composer.renderTarget2.texture}
-                },
-                vertexShader: bloomVertexShader,
-                fragmentShader: bloomFragmentShader,
-            }), 'baseTexture'
+        const renderTarget = new THREE.WebGLRenderTarget(
+            800,
+            600,
+            {
+                samples: this.instance.getPixelRatio() === 1 ? 4 : 0,
+            }
         );
+        this.composer = new EffectComposer(this.instance, renderTarget);
 
-
-        this.fxaaPass.material.uniforms['resolution'].value.set(
-            1 / window.innerWidth,
-            1 / window.innerHeight
-        );
-
-        this.smaaPass = new SMAAPass(this.sizes.width, this.sizes.height);
-
-        this.bloomPass = new UnrealBloomPass(
-            new THREE.Vector3(this.sizes.width, this.sizes.height),
+        const renderPass = new RenderPass(this.scene, this.camera.instance);
+        const bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(this.sizes.width, this.sizes.height),
             1.6,
             0.005,
             0.1,
         )
-        this.bloomPass.strength = 0.7;
-        this.bloomPass.radius = 0.01;
-        this.bloomPass.threshold = 0.1;
+        bloomPass.strength = 0.7;
+        bloomPass.radius = 0.01;
+        bloomPass.threshold = 0.1;
 
-        this.outputPass = new OutputPass();
+        const smaaPass = new SMAAPass(this.sizes.width, this.sizes.height);
+        const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
 
-        // this.finalComposer.addPass(this.renderPass);
-        // this.finalComposer.addPass(this.mixPass);
-        // this.finalComposer.addPass(this.bloomPass);
-        // this.finalComposer.addPass(this.outputPass);
-
-        this.composer.addPass(this.renderPass);
-        this.composer.addPass(this.bloomPass);
-        //this.composer.addPass(this.fxaaPass);
-        this.composer.addPass(this.smaaPass);
-        //this.composer.addPass(this.outputPass);
+        bloomPass.enabled = true;
+        gammaCorrectionPass.enabled = false;
+        smaaPass.enabled = true;
 
 
-
+        this.composer.addPass(renderPass);
+        this.composer.addPass(bloomPass);
+        this.composer.addPass(gammaCorrectionPass);
+        this.composer.addPass(smaaPass);
     }
 
     resize() {
+        this.instance.setPixelRatio(Math.min(this.sizes.pixelRatio, 2));
         this.instance.setSize(this.sizes.width, this.sizes.height);
-        this.instance.setPixelRatio(Math.min(this.sizes.pixelRatio, 2))
+        this.composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.composer.setSize(this.sizes.width, this.sizes.height);
-        this.finalComposer.setSize(this.sizes.width, this.sizes.height);
     }
 
     update() {
         this.composer.render();
-        this.finalComposer.render();
     }
 
 }

@@ -7,6 +7,8 @@ export default class Smoke {
         this.world = new World();
         this.clock = new THREE.Clock();
 
+        this.debug = this.world.debug;
+
         this.textureLoader = new THREE.TextureLoader();
 
         this.delta = 0;
@@ -36,8 +38,8 @@ export default class Smoke {
         this.smokeGeometry = new THREE.PlaneGeometry(100, 100);
         this.smokeMaterial = new THREE.MeshLambertMaterial({
             map: this.smokeTexture,
-            emissive: 0x222222,
-            opacity: 0.4,
+            emissive: 0x222222, //0x222222, //0x1e1e1e //0x1b1b1b, //0x171717, //0x141414
+            opacity: 0.3,
             transparent: true,
         });
         this.smokeParticles = [];
@@ -54,6 +56,13 @@ export default class Smoke {
             this.scene.add(smokeElement);
             this.smokeParticles.push(smokeElement);
         }
+
+        //DEBUG
+        if(this.debug.active){
+            this.debug.ui.addColor(this.smokeMaterial,'emissive').name("smokeEmissive");
+            this.debug.ui.add(this.smokeMaterial,'opacity').min(0).max(1).step(0.01).name("smokeOpacity");
+        }  
+
     }
 
     update(){

@@ -41,7 +41,7 @@ export default class World {
         })
         this.lights = new Lights();
 
-        this.background = new Background(3, 0.04, "black", "red", 35, 35);
+        this.background = new Background(3, 0.04, 35, 35);
 
 
         this.sizes.on('resize', () => {
