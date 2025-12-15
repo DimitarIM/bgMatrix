@@ -15,7 +15,12 @@ export default class Pentagram {
 
         this.resources = this.world.resources;
         this.star = null;
+
         this.circle = new THREE.Group();
+        this.circle.name = "circle";
+        this.pentagram = new THREE.Group();
+        this.pentagram.name = "pentagram";
+
         this.setPentagram();
     }
 
@@ -25,30 +30,47 @@ export default class Pentagram {
         if (hasClicked) return;
         hasClicked = true;
 
-        gsap.to(this.star.scale, { x: 0, y: 0, z: 0, duration: 0.7, ease: "power1.inOut" });
-        gsap.to(this.circle.scale, { x: 0, y: 0, z: 0, duration: 1, ease: "power1.inOut" });
+        return new Promise((resolve) => {
+            gsap.to(this.star.scale, { x: 0, y: 0, z: 0, duration: 0.7, ease: "power1.inOut" });
+            gsap.to(this.circle.scale, { x: 0, y: 0, z: 0, duration: 1, ease: "power1.inOut" });
 
-        gsap.to(this.star.rotation, { x: 4, duration: 1, ease: "power1.inOut" }).then(() => {
-            this.star.rotation.x = Math.PI * 0.5;
-            this.star.scale.set(3, 3, 3);
-        })
-        gsap.to(this.circle.rotation, { x: -4, duration: 2, ease: "power1.inOut" }).then(() => {
-            this.circle.rotation.x = Math.PI * 0.5;
-            this.circle.scale.set(3, 3, 3);
+            gsap.to(this.star.rotation, { x: 4, duration: 1, ease: "power1.inOut" }).then(() => {
+                this.star.rotation.x = Math.PI * 0.5;
+                this.star.scale.set(3, 3, 3);
+            })
+            gsap.to(this.circle.rotation, { x: -4, duration: 2, ease: "power1.inOut" }).then(() => {
+                this.circle.rotation.x = Math.PI * 0.5;
+                this.circle.scale.set(3, 3, 3);
+                resolve();
+            })
         })
 
 
     }
 
+
     setPentagram() {
+        const invisCover = new THREE.Mesh(
+            new THREE.PlaneGeometry(14, 14),
+            new THREE.MeshBasicMaterial({ opacity: 0, transparent: true })
+        )
+        invisCover.rotation.y = Math.PI * 0.5
+        invisCover.position.z = 66.93;
+        invisCover.position.x = -1
+        invisCover.position.y = 15;
+
+        invisCover.name = "InvisCover"
+
         this.star = this.resources.items.starModel.scene;
+
         this.star.scale.set(2.5, 2.5, 2.5);
         this.star.rotation.x = Math.PI * 0.5;
         this.star.rotation.z = Math.PI * 0.5;
         this.star.position.z = 66.93;
         this.star.position.x = 0
         this.star.position.y = 15;
-        this.scene.add(this.star);
+
+        this.star.name = "star";
 
         for (let i = 1; i <= 5; i++) {
             const itemName = `circlePart${i}Model`;
@@ -62,7 +84,8 @@ export default class Pentagram {
         this.circle.position.x = 0
         this.circle.position.y = 15;
 
-        this.scene.add(this.circle);
+        this.pentagram.add(this.star, this.circle, invisCover);
+        this.scene.add(this.pentagram);
     }
 
     update() {

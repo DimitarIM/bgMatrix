@@ -24,26 +24,30 @@ export default class Door extends EventEmitter {
         this.newElapsed = 0;
         this.doorOpeningX = 0.00;
         this.doorOpeningY = 0.00;
-        this.doorEffectsFinished = false;
+        this.doorOpacity = 1.00;
+        this.doorAnimFinished = false;
+        this.doorAnimResolve = null;
 
         this.world = new World();
         this.scene = this.world.scene;
         this.debug = this.world.debug;
-
         this.setDoor();
+
     }
     setDoor() {
         const doorGeometry = new THREE.PlaneGeometry(15, this.boundCols + 1, 32, 32)
 
         const doorMaterial = new THREE.RawShaderMaterial({
+            transparent: true,
             vertexShader: doorVertexShader,
             fragmentShader: doorFragmentShader,
             uniforms: {
                 uColor: { value: new THREE.Color("red") },
+                uOpacity: { value: this.doorOpacity },
                 uIncreaseX: { value: this.doorOpeningX },
                 uIncreaseY: { value: this.doorOpeningY },
-            }
-
+            },
+            name: "door",
         })
         this.instance = new THREE.Mesh(doorGeometry, doorMaterial);
 
@@ -63,22 +67,26 @@ export default class Door extends EventEmitter {
     }
 
     startAnim() {
-        if (!this.doorHasOpened) this.doorEffectT0 = Date.now();
-        this.doorHasOpened = true;
+        return new Promise((resolve) => {
+            if (!this.doorHasOpened) this.doorEffectT0 = Date.now();
+            this.doorHasOpened = true;
+            this.doorAnimResolve = resolve;
+        })
+
     }
 
     doorAnim() {
-        if (!this.doorHasOpened || this.doorEffectsFinished) return;
+        if (!this.doorHasOpened || this.doorAnimFinished) return;
         const now = Date.now();
         const elapsed = now - this.doorEffectT0;
-        const nt1 = Math.min(elapsed / this.doorEffectDuration, 1);
+        const nt1 = Math.min(elapsed / this.doorEffectDuration, 1.3);
 
         this.doorOpeningX = THREE.MathUtils.lerp(0.00, 0.5, nt1 * nt1);
         this.instance.material.uniforms.uIncreaseX.value = this.doorOpeningX;
-        if (nt1 >= 1) {
-            this.doorEffectsFinished = true;
-            this.instance.opacity = 0;
-            this.trigger("startWave");
+        if (nt1 >= 1.3) {
+            this.instance.material.uniforms.uOpacity.value = 0;
+            this.doorAnimFinished = true;
+            this.doorAnimResolve();
         }
     }
 

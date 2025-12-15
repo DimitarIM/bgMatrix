@@ -18,6 +18,7 @@ import Background from './background/Background.js';
 
 import StateManager from './utils/StateManager.js';
 import AnimationManager from './utils/AnimationManager.js';
+import WorldRaycaster from './WorldRaycaster.js';
 
 let instance = null
 export default class World {
@@ -38,8 +39,9 @@ export default class World {
         this.resources = new Resources(sources);
 
         this.camera = new Camera();
-        this.renderer = new Renderer("black");
+        this.renderer = new Renderer("grey");
         this.worldFog = new WorldFog();
+        this.raycaster = new WorldRaycaster();
 
         this.stateManager.on('startTransition', () => {
             this.stateManager.isTransitioning = true;
@@ -69,19 +71,24 @@ export default class World {
 
             this.setAnims({
                 lights: {
-                    start: this.lights.startAnim.bind(this.lights)
+                    start: this.lights.startAnim.bind(this.lights),
+                    hasStarted: false
                 },
                 smoke: {
-                    start: this.smoke.startAnim.bind(this.smoke)
+                    start: this.smoke.startAnim.bind(this.smoke),
+                    hasStarted: false
                 },
                 door: {
-                    start: this.door.startAnim.bind(this.door)
+                    start: this.door.startAnim.bind(this.door),
+                    hasStarted: false
                 },
                 background: {
-                    start: this.background.startAnim.bind(this.background)
+                    start: this.background.startAnim.bind(this.background),
+                    hasStarted: false
                 },
                 pentagram: {
-                    start: this.pentagram.startAnim.bind(this.pentagram)
+                    start: this.pentagram.startAnim.bind(this.pentagram),
+                    hasStarted: false
                 },
             });
         });
@@ -107,6 +114,7 @@ export default class World {
     update() {
         this.camera.update();
         this.renderer.update();
+        this.raycaster.update();
 
         if (this.smoke) this.smoke.update();
         if (this.door) this.door.update();
