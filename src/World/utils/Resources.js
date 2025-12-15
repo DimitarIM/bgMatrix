@@ -1,11 +1,15 @@
 import EventEmitter from "./EventEmitter";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as THREE from 'three'
+import World from "../World";
 
 export default class Resources extends EventEmitter{
     constructor(sources) {
         super();
         this.sources = sources;
+
+        this.world = new World;
+        this.scene = this.world.scene;
 
         this.items = {}
         this.toLoad = this.sources.length
@@ -50,14 +54,28 @@ export default class Resources extends EventEmitter{
         }
     }
 
+    updateAllMaterials(){
+            this.scene.traverse((child) => {
+                if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
+                    child.material.envMapIntensity = 2.5
+                    child.material.needsUpdate = true;
+                    child.castShadow = true
+                    child.receiveShadow = true
+                    child.material.metalness = 0.5;
+                    child.material.roughness = 0.1;
+                }
+            })
+    }
+
     sourceLoaded(source, file) {
-        console.log(file);
         this.items[source.name] = file
 
         this.loaded++;
         if (this.loaded === this.toLoad) {
-            this.trigger('ready')
+            this.trigger('ready');
+            this.updateAllMaterials();
         }
     }
+
 
 }

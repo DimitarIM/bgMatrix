@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import World from "./World";
+import World from "../World";
+import gsap from "gsap";
 
 
 export default class Smoke {
@@ -9,8 +10,6 @@ export default class Smoke {
 
         this.debug = this.world.debug;
 
-        this.textureLoader = new THREE.TextureLoader();
-
         this.delta = 0;
 
         this.scene = this.world.scene;
@@ -18,7 +17,7 @@ export default class Smoke {
 
         this.resources = this.world.resources;
         this.setSmoke();
-
+        this.smokeAnim();
     }
 
     setSmoke() {
@@ -39,7 +38,7 @@ export default class Smoke {
         this.smokeMaterial = new THREE.MeshLambertMaterial({
             map: this.smokeTexture,
             emissive: 0x222222, //0x222222, //0x1e1e1e //0x1b1b1b, //0x171717, //0x141414
-            opacity: 0.3,
+            opacity: 0.04,
             transparent: true,
         });
         this.smokeParticles = [];
@@ -57,6 +56,13 @@ export default class Smoke {
             this.smokeParticles.push(smokeElement);
         }
 
+        let hasClicked = false;
+        window.addEventListener("click", () => {
+            if(hasClicked) return;
+            hasClicked = true;
+            gsap.to(this.smokeMaterial, {opacity: 0, duration: 6})
+        });
+
         //DEBUG
         if(this.debug.active){
             this.debug.ui.addColor(this.smokeMaterial,'emissive').name("smokeEmissive");
@@ -65,26 +71,14 @@ export default class Smoke {
 
     }
 
-    update(){
-        this.delta = this.clock.getDelta();
-        //this.animFrameTimer += this.delta;
-
-        // if(this.animFrameTimer > this.animFrameDuration) {
-        //     this.animFrameTimer = 0;
-        //     this.animCurrentFrame = (this.animCurrentFrame + 1) % this.animTotalFrames;
-
-        //     const frameWidth = 1 / this.animCols;
-        //     const frameHeight = 1 / this.animRows;
-
-        //     const currentCol = this.animCurrentFrame % this.animCols;
-        //     const currentRow = Math.floor(this.animCurrentFrame / this.animCols);
-
-        //     this.smokeMaterial.map.offset.x = currentCol * frameWidth;
-        //     this.smokeMaterial.map.offset.y = 1 - frameHeight - currentRow * frameHeight;
-        // }
-
+    smokeAnim(){
          for(let i = 0; i < this.smokeParticles.length; i ++){
              this.smokeParticles[i].rotation.z += (this.delta * 0.12);
          }
+    }
+
+    update(){
+        this.delta = this.clock.getDelta();
+        this.smokeAnim();
     }
 }

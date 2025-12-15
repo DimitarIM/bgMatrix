@@ -27,13 +27,15 @@ export default class Renderer {
             antialias: false,
         })
         this.instance.shadowMap.enabled = true;
-        this.instance.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.instance.shadowMap.type = THREE.PCFShadowMap
+
+        this.instance.toneMapping = THREE.ReinhardToneMapping
+        this.instance.toneMappingExposure = 1.5;
+        this.instance.outputEncoding = THREE.sRGBEncoding
+
         this.instance.setSize(this.sizes.width, this.sizes.height);
         this.instance.setClearColor(this.worldColor);
         this.instance.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.instance.toneMapping = THREE.LinearToneMapping;
-        this.instance.toneMappingExposure = 1.5;
-        this.instance.outputColorSpace = THREE.SRGBColorSpace;
     }
 
     setComposer() {
@@ -53,7 +55,7 @@ export default class Renderer {
             0.005,
             0.1,
         )
-        bloomPass.strength = 0.7;
+        bloomPass.strength = 0.6;
         bloomPass.radius = 0.01;
         bloomPass.threshold = 0.1;
 
@@ -61,7 +63,7 @@ export default class Renderer {
         const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
 
         bloomPass.enabled = true;
-        gammaCorrectionPass.enabled = false;
+        gammaCorrectionPass.enabled = true;
         smaaPass.enabled = true;
 
 
