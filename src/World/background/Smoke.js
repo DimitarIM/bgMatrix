@@ -25,14 +25,14 @@ export default class Smoke {
         this.smokeTexture.colorSpace = THREE.SRGBColorSpace;
         this.smokeTexture.wrapS = THREE.RepeatWrapping;
         this.smokeTexture.wrapT = THREE.RepeatWrapping;
-        this.smokeTexture.repeat.set(1/6, 1/5);
+        this.smokeTexture.repeat.set(1 / 6, 1 / 5);
 
         this.animTotalFrames = 30;
         this.animCols = 6;
         this.animRows = 5;
         this.animCurrentFrame = 0;
         this.animFrameTimer = 0;
-        this.animFrameDuration  = 0.095;
+        this.animFrameDuration = 0.095;
 
         this.smokeGeometry = new THREE.PlaneGeometry(100, 100);
         this.smokeMaterial = new THREE.MeshLambertMaterial({
@@ -47,7 +47,7 @@ export default class Smoke {
             let smokeElement = new THREE.Mesh(this.smokeGeometry, this.smokeMaterial);
             smokeElement.scale.set(1, 1, 1);
 
-            smokeElement.position.set(10 + Math.random() * 50, Math.random() * 50 - 15, Math.random() * 100 );
+            smokeElement.position.set(10 + Math.random() * 50, Math.random() * 50 - 15, Math.random() * 100);
 
             smokeElement.rotation.z = (Math.random() * 360);
             smokeElement.rotation.y = Math.PI * 0.5;
@@ -56,28 +56,30 @@ export default class Smoke {
             this.smokeParticles.push(smokeElement);
         }
 
-        let hasClicked = false;
-        window.addEventListener("click", () => {
-            if(hasClicked) return;
-            hasClicked = true;
-            gsap.to(this.smokeMaterial, {opacity: 0, duration: 6})
-        });
+
 
         //DEBUG
-        if(this.debug.active){
-            this.debug.ui.addColor(this.smokeMaterial,'emissive').name("smokeEmissive");
-            this.debug.ui.add(this.smokeMaterial,'opacity').min(0).max(1).step(0.01).name("smokeOpacity");
-        }  
+        if (this.debug.active) {
+            this.debug.ui.addColor(this.smokeMaterial, 'emissive').name("smokeEmissive");
+            this.debug.ui.add(this.smokeMaterial, 'opacity').min(0).max(1).step(0.01).name("smokeOpacity");
+        }
 
     }
 
-    smokeAnim(){
-         for(let i = 0; i < this.smokeParticles.length; i ++){
-             this.smokeParticles[i].rotation.z += (this.delta * 0.12);
-         }
+    startAnim() {
+        let hasClicked = false;
+        if (hasClicked) return;
+        hasClicked = true;
+        gsap.to(this.smokeMaterial, { opacity: 0, duration: 6 })
     }
 
-    update(){
+    smokeAnim() {
+        for (let i = 0; i < this.smokeParticles.length; i++) {
+            this.smokeParticles[i].rotation.z += (this.delta * 0.12);
+        }
+    }
+
+    update() {
         this.delta = this.clock.getDelta();
         this.smokeAnim();
     }

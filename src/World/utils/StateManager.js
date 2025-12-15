@@ -8,7 +8,7 @@ export default class StateManager extends EventEmitter {
         this.prevState = null;
         this.currentState = null;
         this.isTransitioning = false;
-        this.setCurrentState("initial");
+        if(this.states) this.setCurrentState("initial");
     }
 
     setCurrentState(stateName) {

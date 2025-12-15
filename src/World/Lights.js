@@ -11,17 +11,14 @@ export default class Lights {
         this.directionaLights = [];
 
         this.setLights();
-        this.onClickFunc();
     }
 
-    onClickFunc(){
+    startAnim() {
         let hasClicked = false;
-        window.addEventListener('click', () => {
-            if(hasClicked) return;
-            hasClicked = true;
-            this.directionaLights.forEach(directionalLight => {
-                gsap.to(directionalLight, {intensity: 0, duration: 0.8});
-            })
+        if (hasClicked) return;
+        hasClicked = true;
+        this.directionaLights.forEach(directionalLight => {
+            gsap.to(directionalLight, { intensity: 0, duration: 0.8 });
         })
     }
 
@@ -44,7 +41,7 @@ export default class Lights {
         //this.scene.add(helper1);
 
         this.directionaLights.push(directionalLightLower);
-        const hemisphereLight = new THREE.HemisphereLight( 0xd6e6ff, 0xa38c08, 1);
+        const hemisphereLight = new THREE.HemisphereLight(0xd6e6ff, 0xa38c08, 1);
         this.scene.add(hemisphereLight);
     }
 }

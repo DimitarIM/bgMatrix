@@ -1,94 +1,43 @@
 import * as THREE from "three";
 import World from "../World";
 import { gsap } from "gsap";
-import Door from "./Door";
-
 
 export default class Background {
-    constructor(squareScale, squareOutlineWidth, boundRows, boundCols) {
+    constructor(bgParams) {
+        const {squareScale, squareOutlineWidth, boundRows, boundCols} = bgParams;
+
+        this.world = new World();
+        this.scene = this.world.scene;
+        this.debug = this.world.debug;
+
         this.squareScale = squareScale;
         this.squareOutlineWidth = squareOutlineWidth;
-
+        this.boundRows = boundRows;
+        this.boundCols = boundCols;
         this.squareDefaultColor = new THREE.Color("black");
         this.squareOutlineColor = new THREE.Color("red");
 
-        this.boundRows = boundRows;
-        this.boundCols = boundCols;
-
         this.background = new THREE.Group();
-        this.clock = new THREE.Clock();
-        this.world = new World();
-        this.scene = this.world.scene;
+        this.setBackground();
 
-        this.debug = this.world.debug;
+        this.waveParams = {
+            startRow: Math.floor(this.boundRows / 2),
+            startCol: 0,
+            timeInterval: 20,
+            colorChange: new THREE.Color("red"),
+        }
 
-        this.time = this.world.time;
+        this.waveActive = false;
+        this.waveT0 = 0;
+        this.waveColor = this.waveParams.colorChange;
 
-        this.door = new Door(this.squareScale, this.squareOutlineWidth, this.boundRows, this.boundCols, this.startWave);
-        this.scene.add(this.door.instance);
-
-        this.setBounds();
-        this.setWaveEffect(Math.floor(this.boundRows / 2), 0, 20, new THREE.Color("red"));
+        //DEBUG
+        if (this.debug.active) {
+            this.debug.ui.addColor(this, 'waveColor').name("waveColor");
+        }
     }
 
-    // setDoor() {
-    //     this.doorEffectDuration = 600;
-    //     this.newElapsed = 0;
-    //     this.doorOpeningX = 0.00;
-    //     this.doorOpeningY = 0.00;
-    //     this.doorHasOpened = false;
-    //     this.doorEffectsFinished = false;
-    //     const doorGeometry = new THREE.PlaneGeometry(15, this.boundCols + 1, 32, 32)
-
-    //     const doorMaterial = new THREE.RawShaderMaterial({
-    //         vertexShader: doorVertexShader,
-    //         fragmentShader: doorFragmentShader,
-    //         uniforms: {
-    //             uColor: { value: new THREE.Color("red") },
-    //             uIncreaseX: { value: this.doorOpeningX },
-    //             uIncreaseY: { value: this.doorOpeningY },
-    //         }
-
-    //     })
-
-    //     const door = new THREE.Mesh(doorGeometry, doorMaterial);
-    //     const doorStartPos = door.geometry.parameters.width / 2 - this.squareScale / 2 - this.squareOutlineWidth;
-    //     door.position.y = door.geometry.parameters.height / 2;
-    //     door.position.x -= 1.5;
-    //     door.position.z = doorStartPos + (this.boundRows * this.squareScale / 2) - door.geometry.parameters.width / 2 + 1
-    //     door.rotation.y = Math.PI * 0.5;
-    //     this.scene.add(door);
-
-    //     window.addEventListener('click', () => {
-    //         if (!this.doorHasOpened) this.doorEffectT0 = Date.now();
-    //         this.doorHasOpened = true;
-    //     })
-
-    //     //DEBUG
-    //     if (this.debug.active) {
-    //         this.debug.ui.addColor(doorMaterial.uniforms.uColor, 'value').name("doorColor");
-    //     }
-
-    //     return door;
-    // }
-
-
-    // doorEffect() {
-    //     if (!this.doorHasOpened || this.doorEffectsFinished) return;
-    //     const now = Date.now();
-    //     const elapsed = now - this.doorEffectT0;
-    //     const nt1 = Math.min(elapsed / this.doorEffectDuration, 1);
-
-    //     this.doorOpeningX = THREE.MathUtils.lerp(0.00, 0.5, nt1 * nt1);
-    //     this.door.material.uniforms.uIncreaseX.value = this.doorOpeningX;
-    //     if (nt1 >= 1) {
-    //         this.doorEffectsFinished = true;
-    //         this.door.opacity = 0;
-    //         this.startWave(Math.floor(this.boundRows / 2), 0, 20, new THREE.Color("red"));
-    //     }
-    // }
-
-    setBounds() {
+    setBackground() {
         const geometry = new THREE.PlaneGeometry(this.squareScale, this.squareScale, this.squareScale);
         const outlineMaterial = new THREE.MeshBasicMaterial({ color: this.squareOutlineColor });
 
@@ -144,39 +93,28 @@ export default class Background {
         }
     };
 
-    setWaveEffect(startRow, startCol, timeInterval, colorChange) {
-        this.waveActive = false;
-        this.waveT0 = 0;
-        this.waveColor = colorChange;
-
-        window.addEventListener('click', () => {
-            
-        });
-
-        //DEBUG
-        if (this.debug.active) {
-            this.debug.ui.addColor(this, 'waveColor').name("waveColor");
-        }
-    }
-
-    startWave(startRow, startCol, timeInterval, colorChange) {
+    startAnim() {
         if (this.waveActive) return;
 
-        // Calc max distance to corners
+        const {startRow, startCol, timeInterval, colorChange} = this.waveParams;
+
+        this.waveStartRow = startRow;
+        this.waveStartCol = startCol;
+        this.timeInterval = timeInterval;
+        this.waveColor = colorChange;
+
+        this.waveStartTime = performance.now();
+
+        this.waveActive = true;
+        this.waveStep = 0;
+
+        // Calc max distance to corners (Manhattan distance)
         const d1 = Math.abs(startRow - 0) + Math.abs(startCol - 0);
         const d2 = Math.abs(startRow - 0) + Math.abs(startCol - (this.boundCols - 1));
         const d3 = Math.abs(startRow - (this.boundRows - 1)) + Math.abs(startCol - 0);
         const d4 = Math.abs(startRow - (this.boundRows - 1)) + Math.abs(startCol - (this.boundCols - 1));
 
         this.maxDistance = Math.max(d1, d2, d3, d4);
-
-        this.waveActive = true;
-        this.waveStep = 0;
-        this.timeInterval = timeInterval;
-        this.waveColor = colorChange;
-        this.waveStartRow = startRow;
-        this.waveStartCol = startCol;
-        this.waveStartTime = performance.now();
     }
 
     waveAnim() {
@@ -226,6 +164,5 @@ export default class Background {
 
     update() {
         this.waveAnim();
-        if(this.door.doorAnim() === "startWave") this.startWave;
     }
 }

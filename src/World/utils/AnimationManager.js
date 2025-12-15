@@ -1,18 +1,15 @@
-import StateManager from "./StateManager";
+import World from "../World";
 
 export default class AnimationManager{
-    constructor() {
-        this.stateManager = new StateManager();
-        this.animations = {
-            waveAnim: "",
-            smokeAnim: "",
-            lightAnim: "",
-            doorAnim: "",
-        }
+    constructor(anims) {
+        this.world = new World();
+        this.stateManager = this.world.stateManager;
+        this.currentState = this.stateManager.currentState;
+        this.anims = anims;
     }
 
-    next(){
-
+    setRayCaster(){
+        
     }
 
     update(){
