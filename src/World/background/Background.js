@@ -4,7 +4,7 @@ import { gsap } from "gsap";
 
 export default class Background {
     constructor(bgParams) {
-        const {squareScale, squareOutlineWidth, boundRows, boundCols} = bgParams;
+        const { squareScale, squareOutlineWidth, boundRows, boundCols } = bgParams;
 
         this.world = new World();
         this.scene = this.world.scene;
@@ -30,6 +30,7 @@ export default class Background {
         this.waveActive = false;
         this.waveT0 = 0;
         this.waveColor = this.waveParams.colorChange;
+        this.waveAnimResolve = null;
 
         //DEBUG
         if (this.debug.active) {
@@ -93,28 +94,34 @@ export default class Background {
         }
     };
 
-    startAnim() {
-        if (this.waveActive) return;
+    startAnim(action, state) {
+        if (state.name === "initial") {
+            if (this.waveActive) return;
 
-        const {startRow, startCol, timeInterval, colorChange} = this.waveParams;
+            return new Promise((resolve) => {
+                const { startRow, startCol, timeInterval, colorChange } = this.waveParams;
 
-        this.waveStartRow = startRow;
-        this.waveStartCol = startCol;
-        this.timeInterval = timeInterval;
-        this.waveColor = colorChange;
+                this.waveStartRow = startRow;
+                this.waveStartCol = startCol;
+                this.timeInterval = timeInterval;
+                this.waveColor = colorChange;
 
-        this.waveStartTime = performance.now();
+                this.waveStartTime = performance.now();
 
-        this.waveActive = true;
-        this.waveStep = 0;
+                this.waveActive = true;
+                this.waveStep = 0;
 
-        // Calc max distance to corners (Manhattan distance)
-        const d1 = Math.abs(startRow - 0) + Math.abs(startCol - 0);
-        const d2 = Math.abs(startRow - 0) + Math.abs(startCol - (this.boundCols - 1));
-        const d3 = Math.abs(startRow - (this.boundRows - 1)) + Math.abs(startCol - 0);
-        const d4 = Math.abs(startRow - (this.boundRows - 1)) + Math.abs(startCol - (this.boundCols - 1));
+                // Calc max distance to the corners 
+                const d1 = Math.abs(startRow - 0) + Math.abs(startCol - 0);
+                const d2 = Math.abs(startRow - 0) + Math.abs(startCol - (this.boundCols - 1));
+                const d3 = Math.abs(startRow - (this.boundRows - 1)) + Math.abs(startCol - 0);
+                const d4 = Math.abs(startRow - (this.boundRows - 1)) + Math.abs(startCol - (this.boundCols - 1));
 
-        this.maxDistance = Math.max(d1, d2, d3, d4);
+                this.maxDistance = Math.max(d1, d2, d3, d4);
+                this.waveAnimResolve = resolve;
+            })
+        }
+
     }
 
     waveAnim() {
@@ -157,6 +164,7 @@ export default class Background {
 
             if (this.waveStep > this.maxDistance + 1) {
                 this.waveActive = false;
+                this.waveAnimResolve();
             }
         }
 

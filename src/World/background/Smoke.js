@@ -66,7 +66,7 @@ export default class Smoke {
 
     }
 
-    startAnim() {
+    startAnim(action, state) {
         let hasClicked = false;
         if (hasClicked) return;
         hasClicked = true;

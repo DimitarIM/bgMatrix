@@ -62,7 +62,7 @@ export default class Renderer {
         const smaaPass = new SMAAPass(this.sizes.width, this.sizes.height);
         const gammaCorrectionPass = new ShaderPass(GammaCorrectionShader);
 
-        bloomPass.enabled = false;
+        bloomPass.enabled = true;
         gammaCorrectionPass.enabled = true;
         smaaPass.enabled = true;
 

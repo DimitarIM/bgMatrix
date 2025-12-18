@@ -13,6 +13,7 @@ export default class WorldRaycaster extends EventEmitter {
         this.needsRaycast = false;
         this.setMouse();
         this.currentObj = null;
+        this.isHovering = false;
     }
 
     setMouse() {
@@ -24,8 +25,8 @@ export default class WorldRaycaster extends EventEmitter {
             this.needsRaycast = true;
         }
         this.renderer.domElement.addEventListener("mousemove", hover, false);
-        this.renderer.domElement.addEventListener("click", ()=> {
-            if(this.currentObj) {
+        this.renderer.domElement.addEventListener("click", () => {
+            if (this.currentObj) {
                 this.trigger("click");
             }
         })
@@ -43,14 +44,23 @@ export default class WorldRaycaster extends EventEmitter {
 
         const intersects = raycaster.intersectObjects(this.scene.children);
         if (intersects.length > 0) {
-            const found = intersects.find(intersect => intersect.object.name.includes("Star", 0) 
-             || intersect.object.name.includes("Circle",0)
-             || intersect.object.name.includes("InvisCover",0))
-            if(found) {
+            const found = intersects.find(intersect => intersect.object.name.includes("Star", 0)
+                || intersect.object.name.includes("Circle", 0)
+                || intersect.object.name.includes("InvisCover", 0))
+            if (found) {
+                if (!this.isHovering) {
+                    this.isHovering = true;
+                    this.trigger("hoverEnter");
+                }
                 this.currentObj = found;
-                this.trigger("hover");
             }
-            else this.currentObj = null;
+            else {
+                if (this.isHovering) {
+                    this.isHovering = false;
+                    this.trigger("hoverLeave")
+                }
+                this.currentObj = null;
+            }
         }
     }
     update() {

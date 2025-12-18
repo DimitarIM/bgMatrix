@@ -5,6 +5,11 @@ export default [
         path: 'textures/smoke30Frames.png'
     },
     {
+        name: 'obeliskModel',
+        type: 'gltfModel',
+        path: 'models/Obelisk.glb'
+    },
+    {
         name: 'starModel',
         type: 'gltfModel',
         path: 'models/Pentagram/Star.glb'
@@ -29,7 +34,7 @@ export default [
         type: 'gltfModel',
         path: 'models/Pentagram/CirclePart4.glb'
     },
-        {
+    {
         name: 'circlePart5Model',
         type: 'gltfModel',
         path: 'models/Pentagram/CirclePart5.glb'

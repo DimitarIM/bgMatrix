@@ -13,7 +13,7 @@ export default class Lights {
         this.setLights();
     }
 
-    startAnim() {
+    startAnim(action, state) {
         let hasClicked = false;
         if (hasClicked) return;
         hasClicked = true;
@@ -23,25 +23,37 @@ export default class Lights {
     }
 
     setLights() {
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-        this.scene.add(ambientLight);
 
-        const directionalLightLower = new THREE.DirectionalLight('red', 3)
-        directionalLightLower.castShadow = true
-        directionalLightLower.shadow.mapSize.set(1024, 1024)
-        directionalLightLower.shadow.camera.far = 15
-        directionalLightLower.shadow.normalBias = 0.05
+        const ambientLight = new THREE.AmbientLight("white", 1);
 
-        directionalLightLower.position.set(0, 12, 67);
-        directionalLightLower.target.position.set(20, 4, 67)
-        this.scene.add(directionalLightLower)
-        this.scene.add(directionalLightLower.target);
+        const directionalLight1 = new THREE.DirectionalLight('red', 3)
+        directionalLight1.castShadow = true
+        directionalLight1.shadow.mapSize.set(1024, 1024)
+        directionalLight1.shadow.camera.far = 15
+        directionalLight1.shadow.normalBias = 0.05
 
-        //const helper1 = new THREE.DirectionalLightHelper(directionalLightLower, 2);
-        //this.scene.add(helper1);
+        directionalLight1.position.set(0, 12, 67);
+        directionalLight1.target.position.set(20, 4, 67);
+        this.scene.add(directionalLight1, directionalLight1.target)
 
-        this.directionaLights.push(directionalLightLower);
+        const directionalLight2 = directionalLight1.clone(true);
+        directionalLight2.castShadow = true
+        directionalLight2.shadow.mapSize.set(1024, 1024)
+        directionalLight2.shadow.camera.far = 15
+        directionalLight2.shadow.normalBias = 0.05
+        directionalLight2.position.set(70, 35, 67);
+        directionalLight2.target.position.set(65, 10, 67);
+
+        //this.scene.add(directionalLight2, directionalLight2.target)
+
+
+        const helper1 = new THREE.DirectionalLightHelper(directionalLight1, 2);
+        const helper2 = new THREE.DirectionalLightHelper(directionalLight2, 2);
+        
         const hemisphereLight = new THREE.HemisphereLight(0xd6e6ff, 0xa38c08, 1);
-        this.scene.add(hemisphereLight);
+        this.scene.add(hemisphereLight, ambientLight);
+
+        this.directionaLights.push(directionalLight1);
+
     }
 }

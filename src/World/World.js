@@ -19,6 +19,7 @@ import Background from './background/Background.js';
 import StateManager from './utils/StateManager.js';
 import AnimationManager from './utils/AnimationManager.js';
 import WorldRaycaster from './WorldRaycaster.js';
+import Obelisk from './obelisk/Obelisk.js';
 
 let instance = null
 export default class World {
@@ -39,7 +40,7 @@ export default class World {
         this.resources = new Resources(sources);
 
         this.camera = new Camera();
-        this.renderer = new Renderer("grey");
+        this.renderer = new Renderer("black");
         this.worldFog = new WorldFog();
         this.raycaster = new WorldRaycaster();
 
@@ -68,27 +69,38 @@ export default class World {
             this.background.door = this.door;
 
             this.pentagram = new Pentagram();
+            this.obelisk = new Obelisk();
 
             this.setAnims({
+                camera: {
+                    start: this.camera.startAnim.bind(this.camera),
+                    hasStarted: false,
+                    reset: null
+                },
                 lights: {
                     start: this.lights.startAnim.bind(this.lights),
-                    hasStarted: false
+                    hasStarted: false,
+                    reset: null
                 },
                 smoke: {
                     start: this.smoke.startAnim.bind(this.smoke),
-                    hasStarted: false
+                    hasStarted: false,
+                    reset: null
                 },
                 door: {
                     start: this.door.startAnim.bind(this.door),
-                    hasStarted: false
+                    hasStarted: false,
+                    reset: null
                 },
                 background: {
                     start: this.background.startAnim.bind(this.background),
-                    hasStarted: false
+                    hasStarted: false,
+                    reset: null
                 },
                 pentagram: {
                     start: this.pentagram.startAnim.bind(this.pentagram),
-                    hasStarted: false
+                    hasStarted: false,
+                    reset: null
                 },
             });
         });
@@ -116,6 +128,7 @@ export default class World {
         this.renderer.update();
         this.raycaster.update();
 
+        if (this.obelisk) this.obelisk.update();
         if (this.smoke) this.smoke.update();
         if (this.door) this.door.update();
         if (this.background) this.background.update();

@@ -66,7 +66,7 @@ export default class Door extends EventEmitter {
 
     }
 
-    startAnim() {
+    startAnim(action, state) {
         return new Promise((resolve) => {
             if (!this.doorHasOpened) this.doorEffectT0 = Date.now();
             this.doorHasOpened = true;
@@ -79,11 +79,11 @@ export default class Door extends EventEmitter {
         if (!this.doorHasOpened || this.doorAnimFinished) return;
         const now = Date.now();
         const elapsed = now - this.doorEffectT0;
-        const nt1 = Math.min(elapsed / this.doorEffectDuration, 1.3);
+        const nt1 = Math.min(elapsed / this.doorEffectDuration, 1.15);
 
         this.doorOpeningX = THREE.MathUtils.lerp(0.00, 0.5, nt1 * nt1);
         this.instance.material.uniforms.uIncreaseX.value = this.doorOpeningX;
-        if (nt1 >= 1.3) {
+        if (nt1 >= 1.15) {
             this.instance.material.uniforms.uOpacity.value = 0;
             this.doorAnimFinished = true;
             this.doorAnimResolve();
