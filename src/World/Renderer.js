@@ -43,7 +43,7 @@ export default class Renderer {
             800,
             600,
             {
-                samples: this.instance.getPixelRatio() === 1 ? 4 : 0,
+                samples: this.instance.getPixelRatio() === 1 ? 4 : 4,
             }
         );
         this.composer = new EffectComposer(this.instance, renderTarget);
